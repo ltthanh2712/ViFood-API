@@ -1,12 +1,13 @@
 using ViFoodAPI.Services.MongoDB;
 using Oracle.ManagedDataAccess.Client;
 using MongoDB.Driver;
+using Neo4j.Driver;
 using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
 
 //
-// 1️⃣ Load .env
+// Load .env
 //
 Env.Load(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
 
@@ -15,14 +16,14 @@ var mongoDatabase = Environment.GetEnvironmentVariable("DatabaseName");
 var oracleConnection = Environment.GetEnvironmentVariable("OracleDb");
 
 //
-// 2️⃣ Core Services
+// Core Services
 //
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 //
-// 3️⃣ MongoDB
+// MongoDB
 //
 builder.Services.AddSingleton<IMongoClient>(_ =>
     new MongoClient(mongoConnection)
@@ -35,24 +36,38 @@ builder.Services.AddScoped<IMongoDatabase>(sp =>
 });
 
 //
-// 4️⃣ Oracle
+// Oracle
 //
 builder.Services.AddScoped(_ =>
     new OracleConnection(oracleConnection)
 );
 
 //
-// 5️⃣ Custom Services
+// Neo4j
+//
+var neo4jUri = Environment.GetEnvironmentVariable("NEO4J_URI");
+var neo4jUsername = Environment.GetEnvironmentVariable("NEO4J_USERNAME");
+var neo4jPassword = Environment.GetEnvironmentVariable("NEO4J_PASSWORD");
+
+builder.Services.AddSingleton<IDriver>(_ =>
+    GraphDatabase.Driver(
+        neo4jUri,
+        AuthTokens.Basic(neo4jUsername, neo4jPassword)
+    )
+);
+
+//
+// Custom Services
 //
 builder.Services.AddScoped<OcrResultService>();
 
 //
-// 6️⃣ Build
+// Build
 //
 var app = builder.Build();
 
 //
-// 7️⃣ Swagger
+// Swagger
 //
 if (app.Environment.IsDevelopment())
 {
@@ -69,7 +84,7 @@ app.Lifetime.ApplicationStarted.Register(() =>
 });
 
 //
-// 8️⃣ Middleware
+// Middleware
 //
 app.UseHttpsRedirection();
 app.UseAuthorization();
