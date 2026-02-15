@@ -1,0 +1,33 @@
+cat <<EOF > .gitignore
+# Build folders
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# VS Code
+.vscode/
+
+# Rider
+.idea/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.*
+
+# Publish output
+publish/
+
+# NuGet
+*.nupkg
+EOF
